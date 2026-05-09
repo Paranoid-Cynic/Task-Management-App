@@ -1,5 +1,7 @@
 # To‑Do List 🎀📝
 
+site link: https://to-do-list-app-with-timer.netlify.app/
+
 A cute to‑do list where each task becomes an adorable **bunny holding a sign**.
 
 - **Add** tasks (with optional due date)
@@ -13,7 +15,7 @@ A cute to‑do list where each task becomes an adorable **bunny holding a sign**
 This project is a simple standalone website:
 
 - **HTML** (`index.html`) – page layout + task template
-- **CSS** (`styles.css`) – styling + kawaii bunny visuals + state animations
+- **CSS** (`styles.css`) – styling + bunny visuals + state animations
 - **JavaScript** (`script.js`) – task CRUD, filtering, localStorage persistence
 
 No frameworks or build tools are used.
@@ -39,20 +41,8 @@ A task is considered **overdue** when:
 - On every change (add/toggle/delete/filter/clear done), the list is re-rendered.
 - CSS classes (`isDone`, `isOverdue`) drive the “cheer” and “sleepy” visuals.
 
-## Run Locally
 
-1. Open:
-   `kawaii-todo/index.html`
-2. You should see the to‑do list immediately.
 
-*(Optional)* In VS Code, you can use **Live Server** to avoid any caching quirks.
-
-## File Structure
-
-- `index.html`
-- `styles.css`
-- `script.js`
-- `README.md`
 
 ## Browser Support
 
