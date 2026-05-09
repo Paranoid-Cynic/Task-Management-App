@@ -23,7 +23,7 @@ const els = {
   timerEmoji: $("#timerEmoji"),
   timerStart: $("#timerStart"),
   timerPause: $("#timerPause"),
-  timerReset: $("#timerReset"),
+
   timerMinutes: $("#timerMinutes"),
   timerMinutesLabel: $("#timerMinutesLabel"),
   timerModeButtons: $$(".timerModes .timerSeg[data-mode]"),
@@ -357,13 +357,25 @@ function renderTimer(secondsLeft, phaseLabel) {
 }
 
 function startTimer() {
+  // If resuming from paused state, use remainingSeconds. Otherwise use selected duration.
   stopTimer();
-  const durationSeconds = (timer.durationMinutes || 25) * 60;
+
+  const remainingFromPause = timer.remainingSeconds;
+  const durationSeconds =
+    timer.running || (timer.endsAtMs && timer.endsAtMs > Date.now())
+      ? (timer.durationMinutes || 25) * 60
+      : Number.isFinite(Number(remainingFromPause)) && Number(remainingFromPause) > 0
+        ? Math.floor(Number(remainingFromPause))
+        : (timer.durationMinutes || 25) * 60;
+
   timer.running = true;
   timer.startedAtMs = Date.now();
   timer.endsAtMs = timer.startedAtMs + durationSeconds * 1000;
-  persistTimer();
 
+  // When we start, clear any stored remainingSeconds and let endsAtMs drive time.
+  timer.remainingSeconds = null;
+
+  persistTimer();
   renderTimer(durationSeconds, "Focus");
 
   timerInterval = setInterval(() => {
@@ -374,12 +386,11 @@ function startTimer() {
       stopTimer();
       persistTimer();
       onTimerDone();
-      renderTimer(0, "Time!" );
+      renderTimer(0, "Time!");
     }
   }, 250);
-
-  // initial render uses endsAt
 }
+
 
 function onTimerDone() {
   // Cheer: briefly toggle all done animations by adding done class to overdue? Instead do a global flash.
@@ -506,15 +517,8 @@ if (els.timerPause) {
 }
 
 
-if (els.timerReset) {
-  els.timerReset.addEventListener("click", () => {
-    stopTimer();
-    // Reset UI to full duration
-    renderTimer(timer.durationMinutes * 60, "Ready");
-    persistTimer();
-    syncTimerUI();
-  });
-}
+
+
 
 // Start initial timer render
 syncTimerUI();
