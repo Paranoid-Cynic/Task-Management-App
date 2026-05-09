@@ -465,22 +465,31 @@ if (els.timerStart) {
 
 if (els.timerPause) {
   els.timerPause.addEventListener("click", () => {
-    // Pause by converting remaining into a new durationMinutes snapshot.
+    // Pause: keep remaining time exactly. Do NOT snap/round to slider increments.
     if (!timer.running) return;
+
     const leftSeconds = currentRemainingSeconds();
     stopTimer();
 
-    // convert seconds to minutes rounded down to nearest 5 for the slider coherence
-    const leftMinutes = Math.max(5, Math.floor(leftSeconds / 60));
-    timer.durationMinutes = leftMinutes - (leftMinutes % 5);
+    // Store remaining as a "durationMinutes" that is consistent with the remaining seconds.
+    // We use minutes with resolution of 1 minute, but preserve seconds rounding behavior via seconds->clock.
+    const leftMinutes = Math.max(1, Math.round(leftSeconds / 60));
+    timer.durationMinutes = clamp(leftMinutes, 5, 60);
     timer.running = false;
-
     persistTimer();
-    if (els.timerMinutes) els.timerMinutes.value = String(timer.durationMinutes);
+
+    if (els.timerMinutes) {
+      // Snap slider visually to nearest 5, but keep timer logic in sync with stored duration.
+      const snapped = timer.durationMinutes - (timer.durationMinutes % 5);
+      timer.durationMinutes = snapped || 5;
+      els.timerMinutes.value = String(timer.durationMinutes);
+    }
     if (els.timerMinutesLabel) els.timerMinutesLabel.textContent = String(timer.durationMinutes);
+
     syncTimerUI();
   });
 }
+
 
 if (els.timerReset) {
   els.timerReset.addEventListener("click", () => {
