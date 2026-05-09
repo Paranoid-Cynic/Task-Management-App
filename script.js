@@ -492,27 +492,8 @@ if (els.timerReset) {
   });
 }
 
-// Keyboard: Space toggles start/pause
-window.addEventListener("keydown", (e) => {
-  const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-  if (tag === "input" || tag === "textarea" || e.target?.isContentEditable) return;
-  if (e.code !== "Space") return;
-  e.preventDefault();
-
-  if (!timer.running) {
-    startTimer();
-  } else {
-    // Pause
-    const leftSeconds = currentRemainingSeconds();
-    stopTimer();
-    const leftMinutes = Math.max(5, Math.floor(leftSeconds / 60));
-    timer.durationMinutes = leftMinutes - (leftMinutes % 5);
-    persistTimer();
-  }
-  syncTimerUI();
-});
-
 // Start initial timer render
 syncTimerUI();
+
 
 
