@@ -300,9 +300,16 @@ function currentRemainingSeconds() {
     const msLeft = timer.endsAtMs - Date.now();
     return Math.max(0, Math.ceil(msLeft / 1000));
   }
-  // When paused, we store remaining as durationMinutes (in whole minutes).
-  return Math.max(0, Math.floor((timer.durationMinutes || 25) * 60));
+  if (!timer.running) {
+    // When paused, resume from the exact stored remainingSeconds.
+    const rem = Number(timer.remainingSeconds);
+    if (Number.isFinite(rem) && rem >= 0) return Math.floor(rem);
+    // Fallback
+    return Math.max(0, Math.floor((timer.durationMinutes || 25) * 60));
+  }
+  return 0;
 }
+
 
 
 function setTimerDuration(minutes) {
@@ -475,18 +482,24 @@ if (els.timerPause) {
 
     // Store remaining as a "durationMinutes" that is consistent with the remaining seconds.
     // We use minutes with resolution of 1 minute, but preserve seconds rounding behavior via seconds->clock.
-    const leftMinutes = Math.max(1, Math.round(leftSeconds / 60));
-    timer.durationMinutes = clamp(leftMinutes, 5, 60);
+    // Store remaining seconds exactly so Resume continues from the exact paused moment.
+    // We keep durationMinutes for the slider label, but we also store exact remainingSeconds.
+    timer.remainingSeconds = leftSeconds;
     timer.running = false;
     persistTimer();
 
+    // Keep exact remaining time for pause/resume.
+    // Use durationMinutes only for UI label/slider; do not let it affect the resume seconds.
+    const approxMinutes = clamp(Math.round(leftSeconds / 60), 5, 60);
+    const snapped = approxMinutes - (approxMinutes % 5) || 5;
+    timer.durationMinutes = snapped;
+
     if (els.timerMinutes) {
-      // Snap slider visually to nearest 5, but keep timer logic in sync with stored duration.
-      const snapped = timer.durationMinutes - (timer.durationMinutes % 5);
-      timer.durationMinutes = snapped || 5;
       els.timerMinutes.value = String(timer.durationMinutes);
     }
     if (els.timerMinutesLabel) els.timerMinutesLabel.textContent = String(timer.durationMinutes);
+
+
 
     syncTimerUI();
   });
