@@ -16,7 +16,19 @@ const els = {
   statOverdue: $("#statOverdue"),
 
   filterButtons: $$(".seg[data-filter]"),
+
+  // Timer UI
+  timerTime: $("#timerTime"),
+  timerPhase: $("#timerPhase"),
+  timerEmoji: $("#timerEmoji"),
+  timerStart: $("#timerStart"),
+  timerPause: $("#timerPause"),
+  timerReset: $("#timerReset"),
+  timerMinutes: $("#timerMinutes"),
+  timerMinutesLabel: $("#timerMinutesLabel"),
+  timerModeButtons: $$(".timerModes .timerSeg[data-mode]"),
 };
+
 
 const STORAGE_KEY = "kawaii_todo_v1";
 
@@ -231,6 +243,276 @@ for (const b of els.filterButtons) {
   });
 }
 
-// Initial render
-render();
+// ---- Kawaii Focus Timer ----
+const TIMER_KEY = "kawaii_focus_timer_v1";
+
+let timer = loadTimer();
+let timerInterval = null;
+
+function clamp(n, min, max) {
+  return Math.min(max, Math.max(min, n));
+}
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
+function secondsToClock(totalSeconds) {
+  totalSeconds = Math.max(0, Math.floor(totalSeconds));
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${pad2(m)}:${pad2(s)}`;
+}
+
+function defaultTimerState() {
+  return {
+    durationMinutes: 25,
+    phase: "focus", // focus | break (we keep cozy single-phase, but show label)
+    running: false,
+    // For running timers
+    startedAtMs: null,
+    // For accurate remaining
+    endsAtMs: null,
+  };
+}
+
+function loadTimer() {
+  try {
+    const raw = localStorage.getItem(TIMER_KEY);
+    if (!raw) return defaultTimerState();
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return defaultTimerState();
+    return {
+      ...defaultTimerState(),
+      ...parsed,
+    };
+  } catch {
+    return defaultTimerState();
+  }
+}
+
+function persistTimer() {
+  localStorage.setItem(TIMER_KEY, JSON.stringify(timer));
+}
+
+function currentRemainingSeconds() {
+  if (!timer.running || !timer.endsAtMs) {
+    return timer.durationMinutes * 60;
+  }
+  const msLeft = timer.endsAtMs - Date.now();
+  return Math.ceil(msLeft / 1000);
+}
+
+function setTimerDuration(minutes) {
+  const nextMinutes = clamp(Number(minutes) || 25, 5, 60);
+  timer.durationMinutes = nextMinutes - (nextMinutes % 5);
+  // If not running, update immediately. If running, reset for simplicity.
+  resetTimer(false);
+  persistTimer();
+}
+
+function resetTimer(keepRunning) {
+  stopTimer();
+  const durationMinutes = timer.durationMinutes || 25;
+  timer.running = Boolean(keepRunning);
+  timer.startedAtMs = null;
+  timer.endsAtMs = null;
+  renderTimer(durationMinutes * 60, timer.running ? "Focus" : "Ready");
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  timer.running = false;
+  timer.startedAtMs = null;
+  timer.endsAtMs = null;
+}
+
+function renderTimer(secondsLeft, phaseLabel) {
+  const clock = els.timerTime;
+  if (clock) clock.textContent = secondsToClock(secondsLeft);
+
+  const emoji = els.timerEmoji;
+  const phaseEl = els.timerPhase;
+  if (phaseEl) phaseEl.textContent = phaseLabel;
+
+  // Mood based on remaining
+  const remaining = secondsLeft;
+  if (emoji) {
+    if (remaining <= 5) emoji.textContent = "(˶˃ ᵕ ˂˶)";
+    else if (remaining <= 60) emoji.textContent = "(っ◔◡◔)っ";
+    else emoji.textContent = "(っ•ᴥ•)っ";
+  }
+}
+
+function startTimer() {
+  stopTimer();
+  const durationSeconds = (timer.durationMinutes || 25) * 60;
+  timer.running = true;
+  timer.startedAtMs = Date.now();
+  timer.endsAtMs = timer.startedAtMs + durationSeconds * 1000;
+  persistTimer();
+
+  renderTimer(durationSeconds, "Focus");
+
+  timerInterval = setInterval(() => {
+    const left = currentRemainingSeconds();
+    renderTimer(left, timer.running ? "Focus" : "Ready");
+
+    if (left <= 0) {
+      stopTimer();
+      persistTimer();
+      onTimerDone();
+      renderTimer(0, "Time!" );
+    }
+  }, 250);
+
+  // initial render uses endsAt
+}
+
+function onTimerDone() {
+  // Cheer: briefly toggle all done animations by adding done class to overdue? Instead do a global flash.
+  const originalTitle = document.title;
+  document.title = "Time! 🎉🩷";
+
+  // Little kawaii effect: pulse background gradients via body class
+  document.body.classList.add("timerDonePulse");
+  setTimeout(() => {
+    document.body.classList.remove("timerDonePulse");
+    document.title = originalTitle;
+  }, 1200);
+
+  // Also make due/active bunnies cheer by temporarily forcing .cheer visibility.
+  for (const li of $$("#taskList .task")) {
+    if (li.classList.contains("isDone")) continue;
+    const cheer = li.querySelector(".cheer");
+    if (!cheer) continue;
+    cheer.style.opacity = "1";
+    cheer.style.transform = "translateY(0)";
+    cheer.style.animation = "pop .6s ease both";
+    setTimeout(() => {
+      cheer.style.opacity = "0";
+      cheer.style.transform = "translateY(6px)";
+      cheer.style.animation = "";
+    }, 650);
+  }
+}
+
+function syncTimerUI() {
+  // Range
+  if (els.timerMinutes) {
+    els.timerMinutes.value = String(timer.durationMinutes || 25);
+  }
+  if (els.timerMinutesLabel) {
+    els.timerMinutesLabel.textContent = String(timer.durationMinutes || 25);
+  }
+
+  // Mode buttons aria-pressed
+  if (els.timerModeButtons) {
+    for (const b of els.timerModeButtons) {
+      const m = Number(b.dataset.mode === "focus" ? 25 : b.dataset.mode === "short" ? 5 : 15);
+      const pressed = m === (timer.durationMinutes || 25);
+      b.setAttribute("aria-pressed", pressed ? "true" : "false");
+    }
+  }
+
+  const left = currentRemainingSeconds();
+  renderTimer(left, timer.running ? "Focus" : "Ready");
+
+  if (els.timerPause) els.timerPause.disabled = !timer.running;
+}
+
+// Events
+if (els.timerModeButtons) {
+  for (const b of els.timerModeButtons) {
+    b.addEventListener("click", () => {
+      // Map modes to minutes
+      const nextMinutes = b.dataset.mode === "focus" ? 25 : b.dataset.mode === "short" ? 5 : 15;
+      setTimerDuration(nextMinutes);
+      syncTimerUI();
+
+      // Focus the button for accessibility
+      b.blur();
+    });
+  }
+}
+
+if (els.timerMinutes) {
+  els.timerMinutes.addEventListener("input", () => {
+    const v = Number(els.timerMinutes.value);
+    const snapped = v - (v % 5);
+    timer.durationMinutes = clamp(snapped, 5, 60);
+    if (els.timerMinutesLabel) els.timerMinutesLabel.textContent = String(timer.durationMinutes);
+    // If running, reset to keep it simple/coherent.
+    if (timer.running) {
+      resetTimer(false);
+    } else {
+      renderTimer(timer.durationMinutes * 60, "Ready");
+    }
+    persistTimer();
+  });
+}
+
+if (els.timerStart) {
+  els.timerStart.addEventListener("click", () => {
+    if (timer.running) return;
+    startTimer();
+    syncTimerUI();
+  });
+}
+
+if (els.timerPause) {
+  els.timerPause.addEventListener("click", () => {
+    // Pause by converting remaining into a new durationMinutes snapshot.
+    if (!timer.running) return;
+    const leftSeconds = currentRemainingSeconds();
+    stopTimer();
+
+    // convert seconds to minutes rounded down to nearest 5 for the slider coherence
+    const leftMinutes = Math.max(5, Math.floor(leftSeconds / 60));
+    timer.durationMinutes = leftMinutes - (leftMinutes % 5);
+    timer.running = false;
+
+    persistTimer();
+    if (els.timerMinutes) els.timerMinutes.value = String(timer.durationMinutes);
+    if (els.timerMinutesLabel) els.timerMinutesLabel.textContent = String(timer.durationMinutes);
+    syncTimerUI();
+  });
+}
+
+if (els.timerReset) {
+  els.timerReset.addEventListener("click", () => {
+    stopTimer();
+    // Reset UI to full duration
+    renderTimer(timer.durationMinutes * 60, "Ready");
+    persistTimer();
+    syncTimerUI();
+  });
+}
+
+// Keyboard: Space toggles start/pause
+window.addEventListener("keydown", (e) => {
+  const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+  if (tag === "input" || tag === "textarea" || e.target?.isContentEditable) return;
+  if (e.code !== "Space") return;
+  e.preventDefault();
+
+  if (!timer.running) {
+    startTimer();
+  } else {
+    // Pause
+    const leftSeconds = currentRemainingSeconds();
+    stopTimer();
+    const leftMinutes = Math.max(5, Math.floor(leftSeconds / 60));
+    timer.durationMinutes = leftMinutes - (leftMinutes % 5);
+    persistTimer();
+  }
+  syncTimerUI();
+});
+
+// Start initial timer render
+syncTimerUI();
+
 

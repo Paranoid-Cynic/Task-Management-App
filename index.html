@@ -19,6 +19,43 @@
       <p class="subtitle">Tasks appear as adorable bunnies holding signs. Complete them to make them cheer! 🎀</p>
     </header>
 
+    <section class="panel" aria-label="Kawaii focus timer">
+      <div class="timerHeader">
+        <div>
+          <h2 class="timerTitle">Kawaii Focus Timer 🌸⏳</h2>
+          <p class="timerSubtitle">Work in cozy sprints. When time’s up, your bunnies cheer.</p>
+        </div>
+        <div class="timerModes" role="group" aria-label="Timer presets">
+          <button class="seg timerSeg" data-mode="focus" type="button" aria-pressed="true">25m</button>
+          <button class="seg timerSeg" data-mode="short" type="button" aria-pressed="false">5m</button>
+          <button class="seg timerSeg" data-mode="long" type="button" aria-pressed="false">15m</button>
+        </div>
+      </div>
+
+      <div class="timerBody">
+        <div class="timerClock" aria-live="polite">
+          <span id="timerEmoji" aria-hidden="true">(っ•ᴥ•)っ</span>
+          <div id="timerTime" class="timerTime">25:00</div>
+          <div id="timerPhase" class="timerPhase">Focus</div>
+        </div>
+
+        <div class="timerControls">
+          <button id="timerStart" class="btn primary" type="button">Start ▶️</button>
+          <button id="timerPause" class="btn ghost" type="button" disabled>Pause ⏸️</button>
+          <button id="timerReset" class="btn ghost" type="button">Reset ↺</button>
+        </div>
+
+        <div class="timerSettings">
+          <label class="rangeWrap">
+            <span>Minutes</span>
+            <input id="timerMinutes" type="range" min="5" max="60" step="5" value="25" />
+            <strong id="timerMinutesLabel">25</strong>
+          </label>
+          <div class="timerHint">Tip: Press <kbd>Space</kbd> to start/pause.</div>
+        </div>
+      </div>
+    </section>
+
     <section class="panel" aria-label="Create a task">
       <form id="taskForm" class="form" autocomplete="off">
         <div class="field">

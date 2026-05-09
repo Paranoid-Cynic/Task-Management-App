@@ -1,0 +1,5 @@
+- [x] Inspect repo structure
+- [x] Create Kawaii To‑Do List site (HTML/CSS/JS)
+- [x] Add bunny-sign tasks UI, done cheer, overdue mood, filtering
+- [x] Add localStorage persistence
+- [x] Add Kawaii Focus Timer (HTML section + CSS styling + JS timer logic + cheer effect)

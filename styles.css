@@ -476,6 +476,71 @@ input:focus{
 
 .checkMark{ display:none; }
 
+.timerHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap: 12px;
+  padding: 2px 14px 10px;
+}
+
+.timerTitle{
+  margin: 0;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.timerSubtitle{
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.timerModes{ display:flex; gap: 8px; flex-wrap:wrap; justify-content:flex-end; }
+.timerSeg{ padding: 10px 12px; }
+
+.timerBody{ padding: 6px 14px 16px; }
+
+.timerClock{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: 6px;
+  padding: 10px 0 6px;
+}
+
+.timerEmoji{
+  font-size: 22px;
+  line-height: 1;
+}
+
+.timerTime{
+  font-size: clamp(34px, 5vw, 46px);
+  font-weight: 1000;
+  letter-spacing: .5px;
+}
+
+.timerPhase{
+  font-weight: 900;
+  color: rgba(0,0,0,.55);
+}
+
+.timerControls{ display:flex; gap: 10px; justify-content:center; flex-wrap:wrap; margin-top: 10px; }
+
+.timerSettings{ margin-top: 12px; display:flex; flex-direction:column; align-items:center; gap: 10px; }
+
+.rangeWrap{ display:flex; align-items:center; gap: 10px; width: min(520px, 92vw); color: var(--muted); font-weight: 800; }
+
+.rangeWrap input[type="range"]{ width: 100%; }
+
+.timerHint{ color: var(--muted); font-weight: 700; font-size: 13px; }
+
+@media (max-width: 860px){
+  .timerHeader{ flex-direction:column; align-items:stretch; }
+  .timerModes{ justify-content:flex-start; }
+}
+
 .footer{
   margin-top: 16px;
   text-align:center;
@@ -493,3 +558,4 @@ input:focus{
   border-radius: 10px;
   padding: 6px 10px;
 }
+
