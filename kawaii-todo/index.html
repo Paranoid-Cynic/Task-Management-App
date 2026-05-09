@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>To‑Do List 🎀📝</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <main class="app" aria-label="Kawaii to-do list">
+    <header class="header">
+      <div class="logo" aria-hidden="true">
+        <span class="sparkle">✦</span>
+        <h1>To‑Do List</h1>
+        <span class="sparkle">✦</span>
+      </div>
+      <p class="subtitle">Tasks appear as adorable bunnies holding signs. Complete them to make them cheer! 🎀</p>
+    </header>
+
+    <section class="panel" aria-label="Create a task">
+      <form id="taskForm" class="form" autocomplete="off">
+        <div class="field">
+          <label for="title">Task</label>
+          <input id="title" name="title" type="text" placeholder="e.g. Buy carrot snacks" required maxlength="120" />
+        </div>
+
+        <div class="field">
+          <label for="due">Due date (optional)</label>
+          <input id="due" name="due" type="date" />
+        </div>
+
+        <div class="field actions">
+          <button class="btn primary" type="submit">Add bunny! 🐰</button>
+          <button class="btn ghost" id="clearCompleted" type="button" title="Remove completed tasks">
+            Clear done 🌸
+          </button>
+        </div>
+      </form>
+
+      <div class="stats" aria-live="polite">
+        <div class="chip">Total: <strong id="statTotal">0</strong></div>
+        <div class="chip">Done: <strong id="statDone">0</strong></div>
+        <div class="chip">Overdue: <strong id="statOverdue">0</strong></div>
+      </div>
+    </section>
+
+    <section class="panel list" aria-label="Task list">
+      <div class="listHeader">
+        <h2>Your bunnies</h2>
+        <div class="filters" role="group" aria-label="Filters">
+          <button class="seg" data-filter="all" type="button" aria-pressed="true">All</button>
+          <button class="seg" data-filter="active" type="button" aria-pressed="false">Active</button>
+          <button class="seg" data-filter="done" type="button" aria-pressed="false">Done</button>
+          <button class="seg" data-filter="overdue" type="button" aria-pressed="false">Overdue</button>
+        </div>
+      </div>
+
+      <div id="emptyState" class="empty" role="status" aria-live="polite">
+        <div class="emptyArt" aria-hidden="true">(っ◔◡◔)っ Your first bunny is waiting!</div>
+        <div class="emptyHint">Add a task above. If you set a due date, overdue bunnies will look sleepy or pouty.</div>
+      </div>
+
+      <ul id="taskList" class="taskList" aria-label="Tasks"></ul>
+    </section>
+
+    <footer class="footer">
+      <span aria-hidden="true">Made with love ✨</span>
+      <span class="kbd">Tip: Press Enter to add.</span>
+    </footer>
+  </main>
+
+  <template id="taskTemplate">
+    <li class="task" data-id="">
+      <div class="kawaii" aria-hidden="true">
+        <div class="bunny">
+          <div class="ears">
+            <span class="ear earL"></span>
+            <span class="ear earR"></span>
+          </div>
+          <div class="face">
+            <span class="eye eyeL"></span>
+            <span class="eye eyeR"></span>
+            <span class="nose"></span>
+            <span class="mouth"></span>
+          </div>
+          <div class="cheeks"></div>
+        </div>
+
+        <div class="signWrap">
+          <div class="sign" role="img" aria-label="Task sign">
+            <div class="signTop"></div>
+            <div class="signText"></div>
+          </div>
+        </div>
+
+        <div class="cheer" aria-hidden="true">
+          <span class="pop">🎉</span>
+          <span class="pop">🎀</span>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="text">
+          <div class="title"></div>
+          <div class="sub">
+            <span class="due"></span>
+            <span class="tag" data-tag="overdue">Overdue</span>
+          </div>
+        </div>
+
+        <div class="controls">
+          <label class="check">
+            <input type="checkbox" class="doneToggle" />
+            <span class="checkMark" aria-hidden="true"></span>
+            <span class="checkLabel">Done</span>
+          </label>
+
+          <button class="btn small danger" type="button" data-action="delete">Delete</button>
+        </div>
+      </div>
+    </li>
+  </template>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
+
