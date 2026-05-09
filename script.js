@@ -296,12 +296,14 @@ function persistTimer() {
 }
 
 function currentRemainingSeconds() {
-  if (!timer.running || !timer.endsAtMs) {
-    return timer.durationMinutes * 60;
+  if (timer.running && timer.endsAtMs) {
+    const msLeft = timer.endsAtMs - Date.now();
+    return Math.max(0, Math.ceil(msLeft / 1000));
   }
-  const msLeft = timer.endsAtMs - Date.now();
-  return Math.ceil(msLeft / 1000);
+  // When paused, we store remaining as durationMinutes (in whole minutes).
+  return Math.max(0, Math.floor((timer.durationMinutes || 25) * 60));
 }
+
 
 function setTimerDuration(minutes) {
   const nextMinutes = clamp(Number(minutes) || 25, 5, 60);
