@@ -37,6 +37,9 @@ const STORAGE_KEY = "kawaii_todo_v1";
 /** @type {Task[]} */
 let tasks = loadTasks();
 let activeFilter = "all";
+// Render persisted tasks on load
+render();
+
 
 function uid() {
   return Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
